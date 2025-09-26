@@ -61,6 +61,29 @@ void DspPipeline::flush(std::vector<int16_t>& output) {
   }
 }
 
+int DspPipeline::processBufferFloat(const float* input, int numSamples, std::vector<float>& output) {
+  floatProc_.assign(input, input + numSamples);
+
+  if (cfg_.enableHighPass) {
+    floatOut_.resize(numSamples);
+    hpf_->processBuffer(floatProc_.data(), numSamples, floatOut_.data());
+    floatProc_.swap(floatOut_);
+  }
+  if (cfg_.enableNoiseSuppressor) {
+    std::vector<float> nsOut;
+    ns_->process(floatProc_.data(), numSamples, nsOut);
+    floatProc_.swap(nsOut);
+  }
+  output = floatProc_;
+  return static_cast<int>(output.size());
+}
+
+void DspPipeline::flushFloat(std::vector<float>& output) {
+  std::vector<float> tail;
+  if (ns_) ns_->flush(tail);
+  output = tail;
+}
+
 } // namespace dsp
 
 

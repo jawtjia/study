@@ -46,6 +46,10 @@ public:
   // Flush any internal overlap buffers (e.g., at end of stream)
   void flush(std::vector<int16_t>& output);
 
+  // Float path: mono float [-1,1]
+  int processBufferFloat(const float* input, int numSamples, std::vector<float>& output);
+  void flushFloat(std::vector<float>& output);
+
 private:
   PipelineConfig cfg_{};
   std::unique_ptr<HighPassFilter> hpf_;
